@@ -1,11 +1,19 @@
 #theCanvas {
-width: 80%;
-height: 40%;
+/*width: 80%;
+height: 40%;*/
 	border-style: solid;
 	margin: 0 auto}
 
 #theCode {
 	width: 80%;
 height: 10em;
-	border-style: solid; 
-}
+	border-style: solid;
+	overflow: auto;
+	}
+
+#theCode p{
+	margin: 0}
+
+.drawingRect {
+	cursor: crosshair;
+	}
