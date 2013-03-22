@@ -34,23 +34,28 @@ var canvasCode = {
 		canvasCode.startPoint.x = evt.clientX;
 		canvasCode.startPoint.y = evt.clientY;
 	},
+
+	startLine: function(evt) {
+		canvasCode.drawing = true;
+		theCanvas.classList.toggle("drawingLine");
+		canvasCode.startPoint.x = evt.clientX;
+		canvasCode.startPoint.y = evt.clientY;
+	},
 	
 	drawRectangle: function(evt){
 		
 		if (canvasCode.drawing) {
+			
+			var lineWidth = canvasCode.theContext.lineWidth;
 		
 			canvasCode.endPoint.x = evt.clientX;
 			canvasCode.endPoint.y = evt.clientY;
 			
-			var xOrigin = Math.min(canvasCode.endPoint.x, canvasCode.startPoint.x) //if they drag right to left, 
-			var lineWidth = canvasCode.theContext.lineWidth
-			// canvasCode.theContext.clearRect(canvasCode.startPoint.x - 10, canvasCode.startPoint.y - 10, canvasCode.endPoint.x - canvasCode.startPoint.x + 20, canvasCode.endPoint.y - canvasCode.startPoint.y + 20);
-
 			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x - lineWidth, canvasCode.lastRectBounds.y - lineWidth, canvasCode.lastRectBounds.w + 2*lineWidth, canvasCode.lastRectBounds.h + 2* lineWidth);
 			
-			canvasCode.theCodeField.innerHTML = canvasCode.theCodeField.innerHTML +  "<p>theContext.clearRect(" + parseInt(canvasCode.lastRectBounds.x) + ","
-			+ parseInt(canvasCode.lastRectBounds.y) + "," + parseInt(canvasCode.lastRectBounds.w)
-			+ ","  + parseInt(canvasCode.lastRectBounds.h) + ")</p>"
+			// canvasCode.theCodeField.innerHTML = canvasCode.theCodeField.innerHTML +  "<p>theContext.clearRect(" + parseInt(canvasCode.lastRectBounds.x) + ","
+			// + parseInt(canvasCode.lastRectBounds.y) + "," + parseInt(canvasCode.lastRectBounds.w)
+			// + ","  + parseInt(canvasCode.lastRectBounds.h) + ")</p>"
 			
 			
 			
@@ -66,10 +71,103 @@ var canvasCode = {
 			+ ","  + parseInt(canvasCode.lastRectBounds.h) + ")</p>"
 		}
 	},
+
+	drawLine: function(evt){
+		
+		if (canvasCode.drawing) {
+			
+			var lineWidth = canvasCode.theContext.lineWidth;
+		
+			canvasCode.endPoint.x = evt.clientX;
+			canvasCode.endPoint.y = evt.clientY;
+			
+			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x - lineWidth, canvasCode.lastRectBounds.y - lineWidth, canvasCode.lastRectBounds.w + 2*lineWidth, canvasCode.lastRectBounds.h + 2* lineWidth);
+			
+			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
+			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
+			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+			
+			canvasCode.theContext.moveTo(canvasCode.startPoint.x, canvasCode.startPoint.y);
+			canvasCode.theContext.lineTo(canvasCode.endPoint.x, canvasCode.endPoint.y);
+			canvasCode.theContext.stroke();
+				
+			canvasCode.theCodeField.innerHTML = canvasCode.theCodeField.innerHTML 
+			+  "<p>theContext.moveTo(" + parseInt(canvasCode.startPoint.x) + ","
+			+ parseInt(canvasCode.startPoint.y) 
+			+ ")</p><p>theContext.lineTo(" + parseInt(canvasCode.endPoint.x)
+			+ ","  + parseInt(canvasCode.endPoint.y) + ")</p>"
+		}
+	},
+
+	fillRectangle: function(evt){
+		
+		if (canvasCode.drawing) {
+
+			var lineWidth = canvasCode.theContext.lineWidth;
+		
+			canvasCode.endPoint.x = evt.clientX;
+			canvasCode.endPoint.y = evt.clientY;
+			
+
+			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x - lineWidth, canvasCode.lastRectBounds.y - lineWidth, canvasCode.lastRectBounds.w + 2*lineWidth, canvasCode.lastRectBounds.h + 2* lineWidth);
+						
+			
+			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
+			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
+			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+			
+			canvasCode.theContext.fillRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);			
+	
+			canvasCode.theCodeField.innerHTML = canvasCode.theCodeField.innerHTML +  "<p>theContext.fillRect(" + parseInt(canvasCode.lastRectBounds.x) + ","
+			+ parseInt(canvasCode.lastRectBounds.y) + "," + parseInt(canvasCode.lastRectBounds.w)
+			+ ","  + parseInt(canvasCode.lastRectBounds.h) + ")</p>"
+		}
+	},
+
+	clearRectangle: function(evt){
+		
+		if (canvasCode.drawing) {
+		
+			canvasCode.endPoint.x = evt.clientX;
+			canvasCode.endPoint.y = evt.clientY;
+			
+			var lineWidth = canvasCode.theContext.lineWidth
+
+			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
+						
+			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
+			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
+			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+
+			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
+
+			canvasCode.theCodeField.innerHTML = canvasCode.theCodeField.innerHTML +  "<p>theContext.clearRect(" + parseInt(canvasCode.lastRectBounds.x) + ","
+			+ parseInt(canvasCode.lastRectBounds.y) + "," + parseInt(canvasCode.lastRectBounds.w)
+			+ ","  + parseInt(canvasCode.lastRectBounds.h) + ")</p>"
+		}
+	},
+
 	
 	endRectangle: function(evt){
 		if (canvasCode.drawing) {
 			theCanvas.classList.toggle("drawingRect");
+			canvasCode.drawing = false;
+			
+			canvasCode.lastRectBounds.x = 0;
+			canvasCode.lastRectBounds.y = 0;
+			canvasCode.lastRectBounds.w = 0;
+			canvasCode.lastRectBounds.h = 0;
+			
+		}
+
+	},
+
+	endLine: function(evt){
+		if (canvasCode.drawing) {
+			theCanvas.classList.toggle("drawingLine");
 			canvasCode.drawing = false;
 			
 			canvasCode.lastRectBounds.x = 0;
@@ -116,6 +214,18 @@ var canvasCode = {
 			case 1:
 				canvasCode.startRectangle(evt);
 				break;
+
+			case 2:
+				canvasCode.startRectangle(evt);
+				break;
+
+			case 3:
+				canvasCode.startRectangle(evt);
+				break;
+
+			case 4:
+				canvasCode.startLine(evt);
+				break;
 		}
 		
 	},
@@ -129,6 +239,18 @@ var canvasCode = {
 			
 			case 1:
 				canvasCode.endRectangle(evt);
+				break;
+
+			case 2:
+				canvasCode.endRectangle(evt);
+				break;
+
+			case 3:
+				canvasCode.endRectangle(evt);
+				break;
+
+			case 3:
+				canvasCode.endLine(evt);
 				break;
 		}
 		
@@ -144,6 +266,18 @@ var canvasCode = {
 			case 1:
 				canvasCode.drawRectangle(evt);
 				break;
+
+			case 2:
+				canvasCode.fillRectangle(evt);
+				break;
+
+			case 3:
+				canvasCode.clearRectangle(evt);
+				break;		
+
+			case 4:
+				canvasCode.drawLine(evt);
+				break;			
 		}
 		
 	}

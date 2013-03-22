@@ -11,12 +11,12 @@
 <canvas id="theCanvas"></canvas>
 <div id="tools">
 <button id="drawRect" onclick="canvasCode.chooseAction(1)">Draw Rect</button>
-<button id="fillRect">Fill Rect</button>
-<button id="clearRect">Clear Rect</button>
-<button id="drawLine">Draw Line</button>
-<button id="drawText">Draw Text</button>
-<button id="chooseFillColor">Fill Color</button>
-<button id="chooseColor">Color</button>
+<button id="fillRect" onclick="canvasCode.chooseAction(2)">Fill Rect</button>
+<button id="clearRect" onclick="canvasCode.chooseAction(3)">Clear Rect</button>
+<button id="drawLine" onclick="canvasCode.chooseAction(4)">Draw Line</button>
+<button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button>
+<button id="chooseFillColor" onclick="canvasCode.chooseFillColor()">Fill Color</button>
+<button id="chooseColor" onclick="canvasCode.chooseColor(1)">Color</button>
 </div>
 <div id="theCode" contenteditable></div>
 </body>
