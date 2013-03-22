@@ -1,0 +1,11 @@
+#theCanvas {
+width: 80%;
+height: 40%;
+	border-style: solid;
+	margin: 0 auto}
+
+#theCode {
+	width: 80%;
+height: 10em;
+	border-style: solid; 
+}
