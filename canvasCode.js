@@ -5,6 +5,7 @@ var canvasCode = {
 	theCodeField: null, //where we put the code
 	currentAction: 0, //what's the current action chosen to do? 0 = none, 1 = drawRect, 2 = fillRect, 3 = clearRect, 4 = drawLine, 5 = drawText
 	drawing: false, // are we currently drawing?
+	origin: {"x":0, "y":0}, // the offsettop and left of the element 
 	startPoint: {"x":0, "y":0}, //a point with x, y coords where the most recent action started
 	endPoint:  {"x":0, "y":0}, //a point with x, y coords where the most recent action ended
 	lastRectBounds:  {"x":0, "y":0, "w":0, "h":0}, //bounds of the last rectangle we drew
@@ -19,8 +20,28 @@ var canvasCode = {
 		canvasCode.theCanvas.addEventListener("mouseup", canvasCode.routeEvent, false)
 		
 		canvasCode.theContext = canvasCode.theCanvas.getContext('2d');
+		canvasCode.origin.x = canvasCode.theCanvas.offsetLeft;
+		canvasCode.origin.y = canvasCode.theCanvas.offsetTop;
 		
 		// canvasCode.theContext.strokeRect(10,10,40,49)
+	},
+	
+	getStartPoint: function(){
+		//return the start point relative to the canvas element itself
+		var relativeStartPoint = {};
+		relativeStartPoint.x = canvasCode.startPoint.x - canvasCode.theCanvas.offsetLeft;
+		relativeStartPoint.y = canvasCode.startPoint.y - canvasCode.theCanvas.offsetTop;	
+		
+		return relativeStartPoint	
+	},
+
+	getEndPoint: function(){
+		//return the end point relative to the canvas element itself
+		var relativeEndPoint = {};
+		relativeEndPoint.x = canvasCode.endPoint.x - canvasCode.theCanvas.offsetLeft;
+		relativeEndPoint.y = canvasCode.endPoint.y - canvasCode.theCanvas.offsetTop;
+		
+		return relativeEndPoint
 	},
 	
 	chooseAction: function(theAction) {
@@ -59,10 +80,10 @@ var canvasCode = {
 			
 			
 			
-			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
-			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
+			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
 			
 			canvasCode.theContext.strokeRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);			
 	
@@ -83,13 +104,15 @@ var canvasCode = {
 			
 			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x - lineWidth, canvasCode.lastRectBounds.y - lineWidth, canvasCode.lastRectBounds.w + 2*lineWidth, canvasCode.lastRectBounds.h + 2* lineWidth);
 			
-			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
-			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
+			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
 			
-			canvasCode.theContext.moveTo(canvasCode.startPoint.x, canvasCode.startPoint.y);
-			canvasCode.theContext.lineTo(canvasCode.endPoint.x, canvasCode.endPoint.y);
+			canvasCode.theContext.beginPath()
+			canvasCode.theContext.moveTo(canvasCode.startPoint.x, canvasCode.getStartPoint.y);
+			canvasCode.theContext.lineTo(canvasCode.endPoint.x, canvasCode.getEndPoint.y);
+			canvasCode.theContext.closePath()
 			canvasCode.theContext.stroke();
 				
 			canvasCode.theCodeField.innerHTML = canvasCode.theCodeField.innerHTML 
@@ -113,10 +136,10 @@ var canvasCode = {
 			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x - lineWidth, canvasCode.lastRectBounds.y - lineWidth, canvasCode.lastRectBounds.w + 2*lineWidth, canvasCode.lastRectBounds.h + 2* lineWidth);
 						
 			
-			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
-			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
+			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
 			
 			canvasCode.theContext.fillRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);			
 	
@@ -137,10 +160,10 @@ var canvasCode = {
 
 			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
 						
-			canvasCode.lastRectBounds.x = canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.y = canvasCode.startPoint.y;
-			canvasCode.lastRectBounds.w = canvasCode.endPoint.x - canvasCode.startPoint.x;
-			canvasCode.lastRectBounds.h = canvasCode.endPoint.y - canvasCode.startPoint.y;
+			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
+			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
 
 			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
 
