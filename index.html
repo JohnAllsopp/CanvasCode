@@ -5,17 +5,31 @@
 	<title>CanvasCode</title>
 	<script src="canvasCode.js"></script>
 	<link rel="stylesheet" type="text/css" href="style.css"  />	
+	
+	
+	<!-- code mirror-->
+	
+	<script src="codemirror/codemirror.js"></script>
+	<link rel="stylesheet" href="codemirror/codemirror.css">
+	<script src="codemirror/javascript.js"></script>
+	
 	<!-- shameless inspired by paintcode http://www.paintcodeapp.com-->
 </head>
 <body>
 <canvas id="theCanvas" width="800" height="300"></canvas>
 <div id="tools">
+<p>
 <button id="drawRect" onclick="canvasCode.chooseAction(1)">Draw Rect</button>
 <button id="fillRect" onclick="canvasCode.chooseAction(2)">Fill Rect</button>
 <button id="clearRect" onclick="canvasCode.chooseAction(3)">Clear Rect</button>
+<button id="drawCircle" onclick="canvasCode.chooseAction(6)">Draw Circle</button>
+<button id="fillCircle" onclick="canvasCode.chooseAction(7)">Fill Circle</button>
+<button id="clearCircle" onclick="canvasCode.chooseAction(8)">Clear Circle</button>
+<button id="drawPolygon" onclick="canvasCode.chooseAction(9)">Draw Polygon</button>
+
 <button id="drawLine" onclick="canvasCode.chooseAction(4)">Draw Line</button>
-<button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button>
-<button id="chooseFillColor" onclick="canvasCode.chooseFillColor()">Fill Color</button>
+<button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button></p>
+<p><button id="chooseFillColor" onclick="canvasCode.chooseFillColor()">Fill Color</button>
 <button id="chooseColor" onclick="canvasCode.chooseColor(1)">Color</button>
 <select id="compositing" onselect="canvasCode.chooseCompositingMode(this.value)"><option>source-atop</option>
 <option>source-in</option>
@@ -27,9 +41,9 @@
 <option>destination-over</option>
 <option>lighter</option>
 <option>xor</option>
-<option>copy</option></select>
+<option>copy</option></select></p>
 </div>
-<div id="theCode" contenteditable></div>
+<textarea id="theCode" contenteditable></textarea>
 
 <h2>Features to add</h2>
 
