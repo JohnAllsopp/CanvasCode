@@ -8,7 +8,7 @@
 	<!-- shameless inspired by paintcode http://www.paintcodeapp.com-->
 </head>
 <body>
-<canvas id="theCanvas"></canvas>
+<canvas id="theCanvas" width="800" height="300"></canvas>
 <div id="tools">
 <button id="drawRect" onclick="canvasCode.chooseAction(1)">Draw Rect</button>
 <button id="fillRect" onclick="canvasCode.chooseAction(2)">Fill Rect</button>
@@ -17,6 +17,17 @@
 <button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button>
 <button id="chooseFillColor" onclick="canvasCode.chooseFillColor()">Fill Color</button>
 <button id="chooseColor" onclick="canvasCode.chooseColor(1)">Color</button>
+<select id="compositing" onselect="canvasCode.chooseCompositingMode(this.value)"><option>source-atop</option>
+<option>source-in</option>
+<option>source-out</option>
+<option>source-over</option>
+<option>destination-atop</option>
+<option>destination-in</option>
+<option>destination-out</option>
+<option>destination-over</option>
+<option>lighter</option>
+<option>xor</option>
+<option>copy</option></select>
 </div>
 <div id="theCode" contenteditable></div>
 
