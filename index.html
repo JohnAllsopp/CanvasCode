@@ -16,9 +16,10 @@
 	<!-- shameless inspired by paintcode http://www.paintcodeapp.com-->
 </head>
 <body>
-<canvas id="theCanvas" width="800" height="300"></canvas>
+<canvas id="theCanvas" width="800" height="300" tabindex="0"></canvas>
 <div id="tools">
 <p>
+<button id="clearCanvas" onclick="canvasCode.clearCanvas()">Clear All</button>
 <button id="drawRect" onclick="canvasCode.chooseAction(1)">Draw Rect</button>
 <button id="fillRect" onclick="canvasCode.chooseAction(2)">Fill Rect</button>
 <button id="clearRect" onclick="canvasCode.chooseAction(3)">Clear Rect</button>
@@ -26,7 +27,7 @@
 <button id="fillCircle" onclick="canvasCode.chooseAction(7)">Fill Circle</button>
 <button id="clearCircle" onclick="canvasCode.chooseAction(8)">Clear Circle</button>
 <button id="drawPolygon" onclick="canvasCode.chooseAction(9)">Draw Polygon</button>
-
+<label for="polygonSides">Sides</label><input id="polygonSides" type="number" min='3' max='20' value='5'>
 <button id="drawLine" onclick="canvasCode.chooseAction(4)">Draw Line</button>
 <button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button></p>
 <p><button id="chooseFillColor" onclick="canvasCode.chooseFillColor()">Fill Color</button>
@@ -47,16 +48,19 @@
 
 <h2>Features to add</h2>
 
-save each thing we create as an object
-save to local storage
-color picker
-create ellipses
-object editors
-line qualities (width, miter, )
-create and save shadows
-create and save gradients
-choose compositing models
-bezier curves
+<ul>
+	<li>save each thing we create as an object</li>
+	<li>save to local storage</li>
+	<li>color picker</li>
+	<li>create ellipses</li>
+	<li>object editors</li>
+	<li>line qualities (width, miter, )</li>
+	<li>create and save shadows</li>
+	<li>create and save gradients</li>
+	<li>choose compositing models</li>
+	<li>bezier curves</li>
+</ul>
+
 
 
 <p>shameless 'inspired' by <a href="http://www.paintcodeapp.com" target="parent">paintcode</a> </p>

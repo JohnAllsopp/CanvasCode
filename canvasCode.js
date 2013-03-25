@@ -12,7 +12,9 @@ var canvasCode = {
 	startPoint: {"x":0, "y":0}, //a point with x, y coords where the most recent action started
 	endPoint:  {"x":0, "y":0}, //a point with x, y coords where the most recent action ended
 	lastRectBounds:  {"x":0, "y":0, "w":0, "h":0}, //bounds of the last rectangle we drew
-	
+	strokeCurrentPath: false, //when we close the current path do we stroke it?
+	filleCurrentPath: false, //when we close the current path do we fill it?
+	currentString: "", //the current string if any we are drawing
 	init: function(){
 		//initialize, call on window load
 		canvasCode.theCanvas = document.querySelector("#theCanvas");
@@ -21,12 +23,19 @@ var canvasCode = {
 		canvasCode.theCanvas.addEventListener("mousedown", canvasCode.routeEvent, false)
 		canvasCode.theCanvas.addEventListener("mousemove", canvasCode.routeEvent, false)
 		canvasCode.theCanvas.addEventListener("mouseup", canvasCode.routeEvent, false)
+		canvasCode.theCanvas.addEventListener("keypress", canvasCode.routeEvent, false)
 		
 		canvasCode.theContext = canvasCode.theCanvas.getContext('2d');
 		canvasCode.origin.x = canvasCode.theCanvas.offsetLeft;
 		canvasCode.origin.y = canvasCode.theCanvas.offsetTop;
 		
 		canvasCode.initCodeMirror()
+	},
+	
+	clearCanvas: function(){
+		canvasCode.statements = [];
+		canvasCode.drawAllStatements();
+		canvasCode.printCode();
 	},
 	
 	getStartPoint: function(){
@@ -60,41 +69,53 @@ var canvasCode = {
 	},
 	
 	chooseAction: function(theAction) {
+		
+		
+		canvasCode.endDraw();
 		canvasCode.currentAction = theAction;
 
 	},
 	
 	startRectangle: function(evt) {
 		canvasCode.drawing = true;
-		theCanvas.classList.toggle("drawingRect");
+		canvasCode.theCanvas.classList.toggle("drawingRect");
 		canvasCode.startPoint.x = evt.clientX;
 		canvasCode.startPoint.y = evt.clientY;
 	},
 
 	startLine: function(evt) {
 		canvasCode.drawing = true;
-		theCanvas.classList.toggle("drawingLine");
+		canvasCode.theCanvas.classList.toggle("drawingLine");
 		canvasCode.startPoint.x = evt.clientX;
 		canvasCode.startPoint.y = evt.clientY;
+		
 	},
 	
 
 	startCircle: function(evt) {
 		canvasCode.drawing = true;
-		theCanvas.classList.toggle("drawingCircle");
+		canvasCode.theCanvas.classList.toggle("drawingCircle");
 		canvasCode.startPoint.x = evt.clientX;
 		canvasCode.startPoint.y = evt.clientY;
 	},
 	
 	startPolygon: function(evt) {
 		canvasCode.drawing = true;
-		theCanvas.classList.toggle("drawingPolygon");
+		canvasCode.theCanvas.classList.toggle("drawingPolygon");
+		canvasCode.startPoint.x = evt.clientX;
+		canvasCode.startPoint.y = evt.clientY;
+	},
+	
+	startText: function(evt) {
+		canvasCode.theCanvas.focus()
+		canvasCode.drawing = true;
+		canvasCode.theCanvas.classList.toggle("drawingText");
 		canvasCode.startPoint.x = evt.clientX;
 		canvasCode.startPoint.y = evt.clientY;
 	},
 	
 	drawAllStatements: function(){
-		//cleaer the canvas and draw all of the statements so far
+		//clear the canvas and draw all of the statements so far
 		
 		canvasCode.theCanvas.width = canvasCode.theCanvas.width + 1;
 		canvasCode.theCanvas.width = canvasCode.theCanvas.width - 1;
@@ -130,11 +151,15 @@ var canvasCode = {
 			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
 			
 			canvasCode.drawAllStatements()
-			canvasCode.theContext.strokeRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);			
+			canvasCode.theContext.strokeRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
 	
-			canvasCode.lastInstruction = "canvasCode.theContext.strokeRect(" + parseInt(canvasCode.lastRectBounds.x) + ", "
+			canvasCode.lastInstruction = "//stroke a rectangle\n" 
+			canvasCode.lastInstruction += "canvasCode.theContext.strokeRect(" + parseInt(canvasCode.lastRectBounds.x) + ", "
 			+ parseInt(canvasCode.lastRectBounds.y) + ", " + parseInt(canvasCode.lastRectBounds.w)
-			+ ", "  + parseInt(canvasCode.lastRectBounds.h) + ")"
+			+ ", "  + parseInt(canvasCode.lastRectBounds.h) + ")";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
 		}
 	},
 
@@ -162,15 +187,17 @@ var canvasCode = {
 			
 			canvasCode.theContext.beginPath();
 			canvasCode.theContext.arc(center.x,center.y,radius,0,Math.PI*2,true); // Outer circle
-			canvasCode.theContext.closePath()
+			// canvasCode.theContext.closePath()
 			canvasCode.theContext.stroke();
 
-			
-			canvasCode.lastInstruction = "canvasCode.theContext.beginPath();\n"
+			canvasCode.lastInstruction = "//draw a circle\n" 
+			canvasCode.lastInstruction += "canvasCode.theContext.beginPath();\n"
 			+ "canvasCode.theContext.arc(" + parseInt(center.x) + ", "
 			+ parseInt(center.y) + ", " + radius + ", 0, Math.PI*2,true);\n"
 			+ "canvasCode.theContext.closePath();" 		
-			+ "\ncanvasCode.theContext.stroke();"
+			+ "\ncanvasCode.theContext.stroke();";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
 		}
 	},
 	
@@ -201,12 +228,15 @@ var canvasCode = {
 			canvasCode.theContext.closePath()
 			canvasCode.theContext.fill();
 
-			
-			canvasCode.lastInstruction = "canvasCode.theContext.beginPath();\n"
+			canvasCode.lastInstruction = "//fill a circle\n" 
+			canvasCode.lastInstruction += "canvasCode.theContext.beginPath();\n"
 			+ "canvasCode.theContext.arc(" + parseInt(center.x) + ", "
 			+ parseInt(center.y) + ", " + radius + ", 0, Math.PI*2,true);\n"
 			+ "canvasCode.theContext.closePath();" 		
-			+ "\ncanvasCode.theContext.fill();"
+			+ "\ncanvasCode.theContext.fill();";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
 		}
 	},
 	
@@ -228,28 +258,39 @@ var canvasCode = {
 			center.x = canvasCode.getStartPoint().x;
 			center.y = canvasCode.getStartPoint().y;
 			
+			var numberOfSides = document.querySelector("#polygonSides").value;
+			
 			var radius = Math.sqrt(Math.pow(canvasCode.lastRectBounds.w, 2) + Math.pow(canvasCode.lastRectBounds.h, 2)).toFixed(2)
 			//diagonal distance from top left to bottom right of bounding rectangle
 			//good old pythagorus
+			var steps = "//draw a polygon with " + parseInt(numberOfSides) + " sides"
+			 //add the strong representation of each step to this as we go
 			
-			canvasCode.theContext.moveTo (center.x +  radius * Math.cos(0), center.x +  radius  *  Math.sin(0));          
+			canvasCode.theContext.moveTo (center.x +  radius * Math.cos(0), center.x +  radius  *  Math.sin(0));
+			steps = steps + "\ncanvasCode.theContext.moveTo (" 
+			+ parseInt(center.x +  radius * Math.cos(0)) + ", " + parseInt(center.x +  radius  *  Math.sin(0)) + ");"
+			
 			canvasCode.theContext.beginPath();
+			steps = steps + "\ncanvasCode.theContext.beginPath();"
 			
-			var numberOfSides = 3;
 			
 			for (var i = 1; i <= numberOfSides;i += 1) {
 			    canvasCode.theContext.lineTo (center.x + radius * Math.cos(i * 2 * Math.PI / numberOfSides), center.y + radius * Math.sin(i * 2 * Math.PI / numberOfSides));
+				steps = steps + "\n" + "canvasCode.theContext.lineTo ("
+				+ parseInt(center.x + radius * Math.cos(i * 2 * Math.PI / numberOfSides)) + ", " 
+				+ parseInt(center.y + radius * Math.sin(i * 2 * Math.PI / numberOfSides)) + ");"
 			}
 
 			canvasCode.theContext.closePath()
 			canvasCode.theContext.stroke();
-
 			
-			canvasCode.lastInstruction = "canvasCode.theContext.beginPath();\n"
-			+ "canvasCode.theContext.arc(" + parseInt(center.x) + ", "
-			+ parseInt(center.y) + ", " + radius + ", 0, Math.PI*2,true);\n"
-			+ "canvasCode.theContext.closePath();" 		
-			+ "\ncanvasCode.theContext.fill();"
+			steps = steps + "\ncanvasCode.theContext.closePath()"
+			+ "\ncanvasCode.theContext.stroke();"
+			
+			canvasCode.lastInstruction = steps;
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
 		}
 		
 	},
@@ -278,12 +319,16 @@ var canvasCode = {
 			canvasCode.theContext.closePath()
 			canvasCode.theContext.stroke();
 				
-			canvasCode.lastInstruction = "canvasCode.theContext.beginPath();\n"
+			canvasCode.lastInstruction = "//draw a line\n" 
+			canvasCode.lastInstruction += "canvasCode.theContext.beginPath();\n"
 			+ "canvasCode.theContext.moveTo(" + parseInt(canvasCode.getStartPoint().x) + ", "
 			+ parseInt(canvasCode.getStartPoint().y) 
 			+ ");\ncanvasCode.theContext.lineTo(" + parseInt(canvasCode.getEndPoint().x)
 			+ ", "  + parseInt(canvasCode.getEndPoint().y) + ");\ncanvasCode.theContext.closePath();" 		
-			+ "\ncanvasCode.theContext.stroke();"
+			+ "\ncanvasCode.theContext.stroke();";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
 		}
 	},
 
@@ -307,11 +352,57 @@ var canvasCode = {
 			
 			canvasCode.theContext.fillRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);			
 	
-			canvasCode.lastInstruction = "canvasCode.theContext.fillRect(" + parseInt(canvasCode.lastRectBounds.x) + ", "
+			canvasCode.lastInstruction = "//fill a rectangle\n" 
+ 			canvasCode.lastInstruction += "canvasCode.theContext.fillRect(" + parseInt(canvasCode.lastRectBounds.x) + ", "
 			+ parseInt(canvasCode.lastRectBounds.y) + ", " + parseInt(canvasCode.lastRectBounds.w)
-			+ ", "  + parseInt(canvasCode.lastRectBounds.h) + ");"
+			+ ", "  + parseInt(canvasCode.lastRectBounds.h) + ");";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
 		}
 	},
+
+	drawText: function(evt){
+		//draw a string of text
+		if (canvasCode.drawing) {
+			
+			//add the character associated with the keypress event to the buffer
+			
+			if (evt.keyCode == 13) {
+				//hitting return ends the current string
+				canvasCode.endText();
+				return
+			}
+			
+			canvasCode.currentString = canvasCode.currentString + String.fromCharCode(evt.keyCode || evt.charCode)
+			  
+			
+			canvasCode.endPoint.x = evt.clientX;
+			canvasCode.endPoint.y = evt.clientY;
+						
+			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
+			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
+			
+			canvasCode.drawAllStatements()
+			
+			canvasCode.theContext// .save();
+			// 			canvasCode.theContext.translate(canvasCode.getStartPoint().x, canvasCode.getStartPoint().y)
+			// canvasCode.theContext.rotate(Math.PI/4)
+			// canvasCode.theContext.fillText(canvasCode.currentString, 0, 0);
+			canvasCode.theContext.fillText(canvasCode.currentString, canvasCode.getStartPoint().x, canvasCode.getStartPoint().y);
+			// canvasCode.theContext.restore();
+			
+			canvasCode.lastInstruction = "//draw some text\n" 
+ 			canvasCode.lastInstruction += "canvasCode.theContext.fillText('" + canvasCode.currentString + "', " +parseInt(canvasCode.getStartPoint().x) + ", " + parseInt(canvasCode.getStartPoint().y) + ");";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
+			evt.preventDefault()
+		}
+	},
+
 
 	clearRectangle: function(evt){
 		
@@ -319,28 +410,29 @@ var canvasCode = {
 		
 			canvasCode.endPoint.x = evt.clientX;
 			canvasCode.endPoint.y = evt.clientY;
-			
-			var lineWidth = canvasCode.theContext.lineWidth
-
-			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
-						
+								
 			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
 			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
 			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
 			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
 
+			canvasCode.drawAllStatements()
 			canvasCode.theContext.clearRect(canvasCode.lastRectBounds.x, canvasCode.lastRectBounds.y, canvasCode.lastRectBounds.w, canvasCode.lastRectBounds.h);
 
-			canvasCode.lastInstruction =  "canvasCode.theContext.clearRect(" + parseInt(canvasCode.lastRectBounds.x) + ", "
+			canvasCode.lastInstruction = "//clear a rectangle\n" 
+ 			canvasCode.lastInstruction +=  "canvasCode.theContext.clearRect(" + parseInt(canvasCode.lastRectBounds.x) + ", "
 			+ parseInt(canvasCode.lastRectBounds.y) + ", " + parseInt(canvasCode.lastRectBounds.w)
-			+ ", "  + parseInt(canvasCode.lastRectBounds.h) + ");"
+			+ ", "  + parseInt(canvasCode.lastRectBounds.h) + ");";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
 		}
 	},
 
 	
 	endRectangle: function(evt){
 		if (canvasCode.drawing) {
-			theCanvas.classList.toggle("drawingRect");
+			canvasCode.theCanvas.classList.toggle("drawingRect");
 			canvasCode.drawing = false;
 			
 			canvasCode.lastRectBounds.x = 0;
@@ -355,10 +447,29 @@ var canvasCode = {
 		}
 
 	},
+	
+	endText: function(evt){
+		if (canvasCode.drawing) {
+			canvasCode.theCanvas.classList.toggle("drawingText");
+			canvasCode.drawing = false;
+			
+			canvasCode.lastRectBounds.x = 0;
+			canvasCode.lastRectBounds.y = 0;
+			canvasCode.lastRectBounds.w = 0;
+			canvasCode.lastRectBounds.h = 0;
+			
+			canvasCode.statements.push(canvasCode.lastInstruction);
+			canvasCode.printCode();
+			canvasCode.currentString = ""; //get rid of the curent string buffer
+			
+			
+		}
+
+	},
 
 	endLine: function(evt){
 		if (canvasCode.drawing) {
-			theCanvas.classList.toggle("drawingLine");
+			canvasCode.theCanvas.classList.toggle("drawingLine");
 			canvasCode.drawing = false;
 			
 			canvasCode.lastRectBounds.x = 0;
@@ -374,14 +485,15 @@ var canvasCode = {
 
 	endCircle: function(evt){
 		if (canvasCode.drawing) {
-			theCanvas.classList.toggle("drawingCircle");
+			canvasCode.theCanvas.classList.toggle("drawingCircle");
 			canvasCode.drawing = false;
 			
 			canvasCode.lastRectBounds.x = 0;
 			canvasCode.lastRectBounds.y = 0;
 			canvasCode.lastRectBounds.w = 0;
 			canvasCode.lastRectBounds.h = 0;
-
+			
+			
 			canvasCode.statements.push(canvasCode.lastInstruction);
 			canvasCode.printCode()
 		}
@@ -390,7 +502,7 @@ var canvasCode = {
 
 	endPolygon: function(evt){
 		if (canvasCode.drawing) {
-			theCanvas.classList.toggle("drawingPolygon");
+			canvasCode.theCanvas.classList.toggle("drawingPolygon");
 			canvasCode.drawing = false;
 			
 			canvasCode.lastRectBounds.x = 0;
@@ -404,13 +516,22 @@ var canvasCode = {
 
 	},
 	
-	printCode: function(){
-		canvasCode.theCodeField.innerHTML = "\n"
+	getCode: function(){
+		//get the currently completed code (not the statement we are currently executing)
+		
 		var theCode = ""
 		for (var i=0; i < canvasCode.statements.length; i++) {
 			theCode =   theCode + "\n\n" + canvasCode.statements[i] 
-			
 		};
+		
+		return theCode;
+		
+	},
+	
+	printCode: function(){
+		//print the current finished code to the code fields 
+		canvasCode.theCodeField.innerHTML = "\n"
+		var theCode = canvasCode.getCode();
 
 		if (canvasCode.theCodeField.innerText) {
 			canvasCode.theCodeField.innerText = theCode
@@ -423,6 +544,8 @@ var canvasCode = {
 		if (canvasCode.theCodeMirror) {
 			canvasCode.theCodeMirror.setValue(theCode)
 		}
+		
+		// canvasCode.lastInstruction = "";
 
 		
 	},
@@ -437,6 +560,10 @@ var canvasCode = {
 		switch(evt.type) {
 			
 			case "mousedown":
+				if(canvasCode.currentAction == 5) {
+					//draw events are a little different, so we check to see if we need to end a current one 
+					canvasCode.endDraw(evt)
+				}
 				canvasCode.startDraw(evt);
 				break;
 			
@@ -445,9 +572,16 @@ var canvasCode = {
 				break;
 
 			case "mouseup":
-				canvasCode.endDraw(evt);
-				break;
 			
+				if(canvasCode.currentAction!==5) {
+					//nouseup doesn't end drawtext
+					canvasCode.endDraw(evt);
+				}
+				break;
+
+			case "keypress":
+				canvasCode.drawText(evt);
+				break;
 		}
 		
 	},
@@ -473,6 +607,10 @@ var canvasCode = {
 
 			case 4:
 				canvasCode.startLine(evt);
+				break;
+
+			case 5:
+				canvasCode.startText(evt);
 				break;
 				
 			case 6:
@@ -516,6 +654,10 @@ var canvasCode = {
 
 			case 4:
 				canvasCode.endLine(evt);
+				break;
+
+			case 5:
+				canvasCode.endText(evt);
 				break;
 
 			case 6:
@@ -581,13 +723,39 @@ var canvasCode = {
 		
 	},
 	
+	parseStatements: function(code){
+		//breaks the JS into statement blocks based on //s
+		
+		var codeArray = code.split("//");
+		var newArray = [];
+		
+		for (var i=0; i < codeArray.length; i++) {
+			if (codeArray[i]!=="") {
+				newArray.push("//" + codeArray[i]) 
+			}
+		};
+		canvasCode.statements = newArray
+	},
+	
 	chooseCompositingMode: function(mode){
 		canvasCode.theContext.globalCompositeOperation = mode
 	},
 	
 	initCodeMirror: function(){
 			canvasCode.theCodeMirror = CodeMirror.fromTextArea(document.querySelector("#theCode"));
+			canvasCode.theCodeMirror.on("change", canvasCode.updateStatementsFromCode)
+	},
+	
+	updateStatementsFromCode: function(){
+		//get the code from the codeMirror and update the preview
+		
+		//only if it has the current focus
+		
+		if (canvasCode.theCodeMirror.hasFocus() == true) {
+			canvasCode.parseStatements(canvasCode.theCodeMirror.getValue())
+			canvasCode.drawAllStatements();
 		}
+	}
 	
 }
 
