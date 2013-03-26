@@ -15,8 +15,16 @@ var canvasCode = {
 	strokeCurrentPath: false, //when we close the current path do we stroke it?
 	filleCurrentPath: false, //when we close the current path do we fill it?
 	currentString: "", //the current string if any we are drawing
+	lastMarkedRange: null; //the last range of the code we marked to show code associated with element
 	init: function(){
 		//initialize, call on window load
+		
+		if(!String.prototype.trim) {
+		  String.prototype.trim = function () {
+		    return this.replace(/^\s+|\s+$/g,'');
+		  };
+		}
+		
 		canvasCode.theCanvas = document.querySelector("#theCanvas");
 		canvasCode.theCodeField = document.querySelector("#theCode");
 		
@@ -113,6 +121,14 @@ var canvasCode = {
 		canvasCode.startPoint.x = evt.clientX;
 		canvasCode.startPoint.y = evt.clientY;
 	},
+
+	startQuadratic: function(evt) {
+		canvasCode.theCanvas.focus()
+		canvasCode.drawing = true;
+		canvasCode.theCanvas.classList.toggle("drawingQuadratic");
+		canvasCode.startPoint.x = evt.clientX;
+		canvasCode.startPoint.y = evt.clientY;
+	},
 	
 	drawAllStatements: function(){
 		//clear the canvas and draw all of the statements so far
@@ -187,7 +203,7 @@ var canvasCode = {
 			
 			canvasCode.theContext.beginPath();
 			canvasCode.theContext.arc(center.x,center.y,radius,0,Math.PI*2,true); // Outer circle
-			// canvasCode.theContext.closePath()
+			canvasCode.theContext.closePath()
 			canvasCode.theContext.stroke();
 
 			canvasCode.lastInstruction = "//draw a circle\n" 
@@ -325,6 +341,43 @@ var canvasCode = {
 			+ parseInt(canvasCode.getStartPoint().y) 
 			+ ");\ncanvasCode.theContext.lineTo(" + parseInt(canvasCode.getEndPoint().x)
 			+ ", "  + parseInt(canvasCode.getEndPoint().y) + ");\ncanvasCode.theContext.closePath();" 		
+			+ "\ncanvasCode.theContext.stroke();";
+			
+			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
+			
+		}
+	},
+
+	drawQuadratic: function(evt){
+		
+		if (canvasCode.drawing) {
+					
+			canvasCode.endPoint.x = evt.clientX;
+			canvasCode.endPoint.y = evt.clientY;
+			
+			canvasCode.clearLastRectangle()
+			
+			canvasCode.lastRectBounds.x = canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.y = canvasCode.getStartPoint().y;
+			canvasCode.lastRectBounds.w = canvasCode.getEndPoint().x - canvasCode.getStartPoint().x;
+			canvasCode.lastRectBounds.h = canvasCode.getEndPoint().y - canvasCode.getStartPoint().y;
+			
+			canvasCode.drawAllStatements()
+			
+			canvasCode.theContext.beginPath()
+			canvasCode.theContext.moveTo(canvasCode.getStartPoint().x, canvasCode.getStartPoint().y);
+			canvasCode.theContext.quadraticCurveTo((canvasCode.getEndPoint().x - canvasCode.getStartPoint().x)/2, (canvasCode.getEndPoint().y - canvasCode.getStartPoint().y)/2, canvasCode.getEndPoint().x, canvasCode.getEndPoint().y); //control point is average point x and y
+			canvasCode.theContext.closePath()
+			canvasCode.theContext.stroke();
+				
+			canvasCode.lastInstruction = "//draw a Quadratic Curve\n" 
+			canvasCode.lastInstruction += "canvasCode.theContext.beginPath();\n"
+			+ "canvasCode.theContext.moveTo(" + parseInt(canvasCode.getStartPoint().x) + ", "
+			+ parseInt(canvasCode.getStartPoint().y) 
+			+ ");\ncanvasCode.theContext.quadraticCurveTo(" + parseInt((canvasCode.getEndPoint().x - canvasCode.getStartPoint().x)/2)
+			+ ", "  + parseInt((canvasCode.getEndPoint().y - canvasCode.getStartPoint().y)/2) + ", " 
+			+ parseInt(canvasCode.getEndPoint().x) + ", " + parseInt(canvasCode.getEndPoint().y) 
+			+ ");\ncanvasCode.theContext.closePath();" 		
 			+ "\ncanvasCode.theContext.stroke();";
 			
 			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
@@ -516,6 +569,22 @@ var canvasCode = {
 
 	},
 	
+	endQuadratic: function(evt){
+		if (canvasCode.drawing) {
+			canvasCode.theCanvas.classList.toggle("drawingQuadratic");
+			canvasCode.drawing = false;
+			
+			canvasCode.lastRectBounds.x = 0;
+			canvasCode.lastRectBounds.y = 0;
+			canvasCode.lastRectBounds.w = 0;
+			canvasCode.lastRectBounds.h = 0;
+
+			canvasCode.statements.push(canvasCode.lastInstruction);
+			canvasCode.printCode()
+		}
+
+	},
+	
 	getCode: function(){
 		//get the currently completed code (not the statement we are currently executing)
 		
@@ -525,6 +594,22 @@ var canvasCode = {
 		};
 		
 		return theCode;
+		
+	},
+	
+	listObjects: function(){
+		//list the current objects 
+		var theObjects = "";
+		var objectComment = "";
+		var objectList = document.querySelector("#objects");
+		
+		for (var i=0; i < canvasCode.statements.length; i++) {
+			objectComment = canvasCode.statements[i].substr(2, canvasCode.statements[i].indexOf("\n")-2) 
+			//get juse the comment part without the //
+			theObjects += "<li onclick='canvasCode.highlightNthStatement(" + parseInt(i) + ")'>" + objectComment + "</li>" 
+		};
+		
+		objectList.innerHTML = theObjects;
 		
 	},
 	
@@ -547,6 +632,7 @@ var canvasCode = {
 		
 		// canvasCode.lastInstruction = "";
 
+		canvasCode.listObjects(); //show a list of the objects
 		
 	},
 	
@@ -629,6 +715,10 @@ var canvasCode = {
 				canvasCode.startPolygon(evt);
 				break;
 
+			case 10:
+				canvasCode.startQuadratic(evt);
+				break;
+
 		}
 		
 	},
@@ -675,6 +765,10 @@ var canvasCode = {
 			case 9:
 				canvasCode.endPolygon(evt);
 				break;
+
+			case 10:
+				canvasCode.endQuadratic(evt);
+				break;
 		}
 		
 	},
@@ -719,6 +813,10 @@ var canvasCode = {
 				canvasCode.drawPolygon(evt);
 				break;
 
+			case 10:
+				canvasCode.drawQuadratic(evt);
+				break;
+
 		}
 		
 	},
@@ -730,11 +828,41 @@ var canvasCode = {
 		var newArray = [];
 		
 		for (var i=0; i < codeArray.length; i++) {
-			if (codeArray[i]!=="") {
-				newArray.push("//" + codeArray[i]) 
+			if (codeArray[i].trim()!=="") {
+				newArray.push("//" + codeArray[i].trim()) 
 			}
 		};
 		canvasCode.statements = newArray
+	},
+	
+	highlightNthStatement: function(n){
+		//highlight the nth statement in the canvas
+		
+		canvasCode.drawAllStatements();
+		var code = canvasCode.statements[n];
+		canvasCode.theContext.save()
+		canvasCode.theContext.strokeStyle = "yellow";
+		canvasCode.theContext.fillStyle = "yellow";
+		eval(code);
+		canvasCode.theContext.restore()
+		
+		//highlight the code for this statement in the codemirror
+		
+		canvasCode.clearLastMarkedRange();
+		
+		var canvasCode.lastMarkedRange = canvasCode.theCodeMirror.markText({line:2, ch:5}, {line:3, ch:0}, {className: "highlighted"}) 
+		// var test = canvasCode.theCodeMirror.getCursor()
+		
+	},
+	
+	clearLastMarkedRange: function(){
+		//clear the last marked range that was highlighted to show code associated with an element
+		
+		if (canvasCode.lastMarkedRange){
+			canvasCode.lastMarkedRange.clear();
+			canvasCode.lastMarkedRange = null;
+		}
+		
 	},
 	
 	chooseCompositingMode: function(mode){

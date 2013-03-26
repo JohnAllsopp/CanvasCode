@@ -1,3 +1,7 @@
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	}
+
 #theCanvas {
 /*width: 80%;
 height: 40%;*/
@@ -11,6 +15,33 @@ height: 10em;
 	overflow: auto;
 	white-space: pre;
 	}
+
+#tools {
+width: 200px;
+	float: left
+}
+
+#objects {
+width: 200px;
+	float: right
+}
+
+#objects li {
+	list-style-type: none;
+	background-color: #eee;
+	padding: .2em .4em;
+	cursor: pointer;
+	border-bottom: solid thin #999;
+	font-size: .9em; 
+}
+
+#objects li:hover {
+	background-color: #dedede;
+}
+
+.highlighted {
+	background-color: #ffff00}
+
 
 #theCode p{
 	margin: 0}
