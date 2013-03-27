@@ -1,29 +1,43 @@
 body {
-	font-family: Helvetica, Arial, sans-serif;
-	}
+	font-family: Helvetica, Arial, sans-serif; 
+}
+
+h1, h2, h3 {
+	margin: 0;
+	padding: 0}
 
 #theCanvas {
-/*width: 80%;
-height: 40%;*/
-	border-style: solid;
-	margin: 0 auto}
+	/*width: 80%;
+	height: 40%;
+	*/
+	border-style: none;
+	margin: 0 auto;
+	box-shadow: 0 0 5px #bbb;
+	outline: none}
 
 #theCode {
 	width: 80%;
-height: 10em;
+	height: 10em;
 	border-style: solid;
 	overflow: auto;
-	white-space: pre;
-	}
+	white-space: pre; 
+}
 
 #tools {
-width: 200px;
-	float: left
+	width: 200px;
+	float: left 
+}
+
+#objectContainer {
+	width: 200px;
+	float: right 
 }
 
 #objects {
-width: 200px;
-	float: right
+	margin: 0;
+	padding: 0;
+	min-height: 5em;
+	background-color: #e6e6e6; 
 }
 
 #objects li {
@@ -35,17 +49,22 @@ width: 200px;
 	font-size: .9em; 
 }
 
-#objects li:hover {
-	background-color: #dedede;
+#objects li:hover, #objects li#current {
+	background-color: #dedede; 
 }
 
 .highlighted {
-	background-color: #ffff00}
+	background-color: rgba(255, 255, 0, .4) 
+}
 
+#todo {
+	display: none}
 
-#theCode p{
-	margin: 0}
+#theCode p {
+	margin: 0 
+}
 
-.drawingRect {
-	cursor: crosshair;
-	}
+#theCanvas .drawingRect {
+	cursor: crosshair; 
+}
+

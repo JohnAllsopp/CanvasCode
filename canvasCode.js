@@ -15,7 +15,8 @@ var canvasCode = {
 	strokeCurrentPath: false, //when we close the current path do we stroke it?
 	filleCurrentPath: false, //when we close the current path do we fill it?
 	currentString: "", //the current string if any we are drawing
-	lastMarkedRange: null; //the last range of the code we marked to show code associated with element
+	lastMarkedRange: null, //the last range of the code we marked to show code associated with element
+	currentStatement: 0, //current statement we have selected
 	init: function(){
 		//initialize, call on window load
 		
@@ -440,14 +441,20 @@ var canvasCode = {
 			
 			canvasCode.drawAllStatements()
 			
-			canvasCode.theContext// .save();
+			// canvasCode.theContext.save();
 			// 			canvasCode.theContext.translate(canvasCode.getStartPoint().x, canvasCode.getStartPoint().y)
 			// canvasCode.theContext.rotate(Math.PI/4)
 			// canvasCode.theContext.fillText(canvasCode.currentString, 0, 0);
+			var font = document.querySelector("#fontFamily").value;
+			var fontSize = document.querySelector("#fontSize").value + "px";
+			
+			canvasCode.theContext.font = fontSize + " " + font;
 			canvasCode.theContext.fillText(canvasCode.currentString, canvasCode.getStartPoint().x, canvasCode.getStartPoint().y);
 			// canvasCode.theContext.restore();
 			
-			canvasCode.lastInstruction = "//draw some text\n" 
+			
+			canvasCode.lastInstruction = "//draw some text\n";
+			canvasCode.lastInstruction += "canvasCode.theContext.font = '" + fontSize + " " + font + "';\n"; 
  			canvasCode.lastInstruction += "canvasCode.theContext.fillText('" + canvasCode.currentString + "', " +parseInt(canvasCode.getStartPoint().x) + ", " + parseInt(canvasCode.getStartPoint().y) + ");";
 			
 			canvasCode.theCodeMirror.setValue(canvasCode.getCode() + "\n\n" + canvasCode.lastInstruction)
@@ -487,14 +494,16 @@ var canvasCode = {
 		if (canvasCode.drawing) {
 			canvasCode.theCanvas.classList.toggle("drawingRect");
 			canvasCode.drawing = false;
-			
+									
 			canvasCode.lastRectBounds.x = 0;
 			canvasCode.lastRectBounds.y = 0;
 			canvasCode.lastRectBounds.w = 0;
 			canvasCode.lastRectBounds.h = 0;
 			
-			canvasCode.statements.push(canvasCode.lastInstruction);
-			canvasCode.printCode()
+			if (canvasCode.lastInstruction !== "") {
+				canvasCode.statements.push(canvasCode.lastInstruction);
+				canvasCode.printCode()
+			}
 			
 			
 		}
@@ -511,8 +520,11 @@ var canvasCode = {
 			canvasCode.lastRectBounds.w = 0;
 			canvasCode.lastRectBounds.h = 0;
 			
-			canvasCode.statements.push(canvasCode.lastInstruction);
-			canvasCode.printCode();
+			if (canvasCode.lastInstruction !== "") {
+				canvasCode.statements.push(canvasCode.lastInstruction);
+				canvasCode.printCode()
+			}
+
 			canvasCode.currentString = ""; //get rid of the curent string buffer
 			
 			
@@ -529,9 +541,11 @@ var canvasCode = {
 			canvasCode.lastRectBounds.y = 0;
 			canvasCode.lastRectBounds.w = 0;
 			canvasCode.lastRectBounds.h = 0;
-
-			canvasCode.statements.push(canvasCode.lastInstruction);
-			canvasCode.printCode()
+			
+			if (canvasCode.lastInstruction !== "") {
+				canvasCode.statements.push(canvasCode.lastInstruction);
+				canvasCode.printCode()
+			}
 		}
 
 	},
@@ -547,8 +561,10 @@ var canvasCode = {
 			canvasCode.lastRectBounds.h = 0;
 			
 			
-			canvasCode.statements.push(canvasCode.lastInstruction);
-			canvasCode.printCode()
+			if (canvasCode.lastInstruction !== "") {
+				canvasCode.statements.push(canvasCode.lastInstruction);
+				canvasCode.printCode()
+			}
 		}
 
 	},
@@ -563,8 +579,10 @@ var canvasCode = {
 			canvasCode.lastRectBounds.w = 0;
 			canvasCode.lastRectBounds.h = 0;
 
-			canvasCode.statements.push(canvasCode.lastInstruction);
-			canvasCode.printCode()
+			if (canvasCode.lastInstruction !== "") {
+				canvasCode.statements.push(canvasCode.lastInstruction);
+				canvasCode.printCode()
+			}
 		}
 
 	},
@@ -579,8 +597,10 @@ var canvasCode = {
 			canvasCode.lastRectBounds.w = 0;
 			canvasCode.lastRectBounds.h = 0;
 
-			canvasCode.statements.push(canvasCode.lastInstruction);
-			canvasCode.printCode()
+			if (canvasCode.lastInstruction !== "") {
+				canvasCode.statements.push(canvasCode.lastInstruction);
+				canvasCode.printCode()
+			}
 		}
 
 	},
@@ -630,7 +650,7 @@ var canvasCode = {
 			canvasCode.theCodeMirror.setValue(theCode)
 		}
 		
-		// canvasCode.lastInstruction = "";
+		canvasCode.lastInstruction = "";
 
 		canvasCode.listObjects(); //show a list of the objects
 		
@@ -836,7 +856,7 @@ var canvasCode = {
 	},
 	
 	highlightNthStatement: function(n){
-		//highlight the nth statement in the canvas
+		//highlight the nth statement in the canvas	
 		
 		canvasCode.drawAllStatements();
 		var code = canvasCode.statements[n];
@@ -850,8 +870,63 @@ var canvasCode = {
 		
 		canvasCode.clearLastMarkedRange();
 		
-		var canvasCode.lastMarkedRange = canvasCode.theCodeMirror.markText({line:2, ch:5}, {line:3, ch:0}, {className: "highlighted"}) 
-		// var test = canvasCode.theCodeMirror.getCursor()
+		//now get the line offset for the start and end of the statement
+		
+		var lineCount = 0;
+		var returns
+		for (var i=0; i<n; i++) {
+			returns = canvasCode.statements[i].match(/\n/g).length //cunt the number of returns
+			lineCount += returns + 2 //we separate statements by double returns
+		};
+		lineCount += 2
+		
+		var currentStatementLineCount = canvasCode.statements[n].match(/\n/g).length + 1
+		
+		
+		canvasCode.lastMarkedRange = canvasCode.theCodeMirror.markText({line:lineCount, ch:0}, {line:lineCount + currentStatementLineCount, ch:0}, {className: "highlighted", clearOnEnter: true});
+		canvasCode.theCodeMirror.scrollIntoView({line:lineCount, ch:0})
+		
+		canvasCode.currentStatement = n //remeber this is the current statement
+
+		//style the nth list item
+		var lis = document.querySelectorAll("#objects li")
+		
+		for (var i=0; i < lis.length; i++) {
+			if(i !== n) {
+				lis[i].id = ""
+			} 
+			
+			else {
+				lis[i].id = "current"
+			}
+		};
+		
+	},
+	
+	codeCursorChanged: function(){
+		//called when the cursor changes in the codeMirror
+		//this may be due to editing
+		
+			var currentLine = canvasCode.theCodeMirror.getCursor();
+			if (currentLine) {
+
+				var lineCount = 0; 
+			//calculate the statement this line is in
+		
+			for (var i=0; i < canvasCode.statements.length; i++) {
+				lineCount += canvasCode.statements[i].match(/\n/g).length + 2;
+				if (lineCount >= currentLine) {
+					break;
+				}
+			};
+		
+			//current statement in n
+		
+			if (canvasCode.currentStatment !== n ) {
+				//don't want to update it if it hasn't changed
+				canvasCode.highlightNthStatement(n)
+			}
+		}
 		
 	},
 	
@@ -872,6 +947,8 @@ var canvasCode = {
 	initCodeMirror: function(){
 			canvasCode.theCodeMirror = CodeMirror.fromTextArea(document.querySelector("#theCode"));
 			canvasCode.theCodeMirror.on("change", canvasCode.updateStatementsFromCode)
+			canvasCode.theCodeMirror.on("cursorActivity", canvasCode.codeCursorChanged)
+			// canvasCode.theCodeMirror.on("cursorActivity", canvasCode.codeCursorChanged)
 	},
 	
 	updateStatementsFromCode: function(){

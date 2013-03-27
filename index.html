@@ -16,11 +16,16 @@
 	<!-- shameless inspired by paintcode http://www.paintcodeapp.com-->
 </head>
 <body>
-	<ul id="objects">
-</ul>
+	
+<section id="objectContainer" class="container">
+	<h1>Objects</h1>
+		<ul id="objects">
+	</ul>
+</section>
 
 <canvas id="theCanvas" width="800" height="300" tabindex="0"></canvas>
-<div id="tools">
+<section id="tools" class="container">
+<h1>Tools</h1>
 <p><button id="clearCanvas" onclick="canvasCode.clearCanvas()">Clear All</button></p>
 <p><button id="drawRect" onclick="canvasCode.chooseAction(1)">Draw Rect</button>
 <button id="fillRect" onclick="canvasCode.chooseAction(2)">Fill Rect</button>
@@ -31,7 +36,19 @@
 <label for="polygonSides">Sides</label><input id="polygonSides" type="number" min='3' max='20' value='5'></p>
 <p><button id="drawLine" onclick="canvasCode.chooseAction(4)">Draw Line</button>
 <button id="drawQuadratic" onclick="canvasCode.chooseAction(10)">Draw Quadratic</button></p>
-<p><button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button></p></p>
+<p><button id="drawText" onclick="canvasCode.chooseAction(5)">Draw Text</button><label for="fontSize">Font Size</label><input type="number" value=20 id="fontSize"><label for="fontFamily">Font</label><select id="fontFamily">
+<option>Arial</option>
+<option>Helvetica</option>
+<option>Courier</option>
+<option>Courier New</option>
+<option>Georgia</option>
+<option>Impact</option>
+<option>Lucida Grande</option>
+<option>Lucida Console</option>
+<option>Monaco</option>
+<option>Palatino</option>
+<option>Times New Roman</option>
+</select></p>
 <p><button id="chooseFillColor" onclick="canvasCode.chooseFillColor()">Fill Color</button>
 <p><button id="chooseColor" onclick="canvasCode.chooseColor(1)">Color</button>
 <select id="compositing" onselect="canvasCode.chooseCompositingMode(this.value)"><option>source-atop</option>
@@ -45,9 +62,16 @@
 <option>lighter</option>
 <option>xor</option>
 <option>copy</option></select></p>
-</div>
-<textarea id="theCode" contenteditable></textarea>
+</section>
 
+
+<section id="codeContainer" class="container">
+<h1>The Code</h1>
+<textarea id="theCode" contenteditable></textarea>
+</section>
+
+
+<section id="todo" class="container">
 <h2>Features to add</h2>
 
 <ul>
@@ -62,9 +86,12 @@
 	<li>choose compositing models</li>
 	<li>bezier curves</li>
 </ul>
+</section>
 
 
 
+<footer
 <p>shameless 'inspired' by <a href="http://www.paintcodeapp.com" target="parent">paintcode</a> </p>
+</footer>
 </body>
 </html>
